@@ -1,10 +1,12 @@
-# MODULE_NAME
+# tf-sleep
 
 ## Table of Contents
 
 ## Overview
 
-A description of the module goes here.
+This module sleeps for a given duration.
+
+Handy for those pesky race conditions with dependencies.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
