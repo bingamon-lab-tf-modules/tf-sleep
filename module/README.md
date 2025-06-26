@@ -4,9 +4,7 @@
 
 ## Overview
 
-This module sleeps for a given duration.
-
-Handy for those pesky race conditions with dependencies.
+This module sleeps for a given duration and is handy for those pesky race conditions with dependencies.
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
