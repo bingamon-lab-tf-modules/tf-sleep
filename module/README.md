@@ -36,7 +36,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_sleep_duration"></a> [sleep\_duration](#input\_sleep\_duration) | Duration to sleep (e.g., '30s', '1m', '2h') | `string` | `"30s"` | no |
+| <a name="input_sleep_duration"></a> [sleep\_duration](#input\_sleep\_duration) | Duration to sleep (e.g., '30s', '1m', '2h') | `string` | `"1m"` | no |
 
 ## Outputs
 
