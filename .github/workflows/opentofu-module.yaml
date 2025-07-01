@@ -118,27 +118,52 @@ jobs:
         shell: devenv shell --quiet bash -- -e {0}
         run: |
           echo "📝 Checking OpenTofu format..."
+          echo "Git status before format check:"
+          git status --porcelain
           if ! tofu fmt -check -recursive "${MODULE_HOME}";
           then
             echo "❌ OpenTofu files are not properly formatted!"
             echo "💡 Run: tofu fmt -recursive ${MODULE_HOME}"
+            echo "Git status after failed format check:"
+            git status --porcelain
             exit 1
           fi
+          echo "Git status after format check:"
+          git status --porcelain
           echo "✅ OpenTofu format check passed"
 
       - id: opentofu_docs_check
         name: OpenTofu Documentation Check
         shell: devenv shell --quiet bash -- -e {0}
         run: |
-          echo "##### DEBUG DEBUG DEBUG #####"
-          git status
-          echo "##### DEBUG DEBUG DEBUG #####"
+          echo "##### ENHANCED DEBUG START #####"
+          echo "Working directory: $(pwd)"
+          echo "Git status:"
+          git status --porcelain
+          echo "Git config (core.autocrlf): $(git config core.autocrlf || echo 'not set')"
+          echo "Git config (core.eol): $(git config core.eol || echo 'not set')"
+          echo "terraform-docs version: $(terraform-docs --version)"
+          echo "Current README.md checksum:"
+          md5sum ${MODULE_HOME}/README.md || echo "README.md not found"
+          echo "File details:"
+          ls -la ${MODULE_HOME}/README.md || echo "README.md not found"
+          echo "##### ENHANCED DEBUG END #####"
           echo "📚 Checking OpenTofu documentation..."
           if command -v terraform-docs &> /dev/null;
           then
             # Check if README needs updating
+            echo "##### BEFORE terraform-docs CHECK #####"
+            git status --porcelain
+            echo "##### RUNNING terraform-docs CHECK #####"
             if ! terraform-docs --output-check --config .terraform-docs.yml ${MODULE_HOME};
             then
+              echo "##### AFTER FAILED CHECK - SHOWING WHAT WOULD CHANGE #####"
+              echo "Running terraform-docs without --output-check to see changes:"
+              terraform-docs --config .terraform-docs.yml ${MODULE_HOME} --dry-run || echo "dry-run not available"
+              echo "Git status after failed check:"
+              git status --porcelain
+              echo "Git diff:"
+              git diff
               echo "❌ Module README.md is out of date!"
               echo "💡 Run: tofu-docs ${MODULE_HOME} locally to update the README.md"
               exit 1
