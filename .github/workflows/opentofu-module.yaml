@@ -130,6 +130,9 @@ jobs:
         name: OpenTofu Documentation Check
         shell: devenv shell --quiet bash -- -e {0}
         run: |
+          echo "##### DEBUG DEBUG DEBUG #####"
+          git status
+          echo "##### DEBUG DEBUG DEBUG #####"
           echo "📚 Checking OpenTofu documentation..."
           if command -v terraform-docs &> /dev/null;
           then
