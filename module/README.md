@@ -4,7 +4,7 @@
 
 ## Overview
 
-This module sleeps for a given duration and is handy for those pesky race conditions with dependencies.
+This module sleeps for a given duration and can be handy for those pesky race conditions with dependencies.
 
 ## Documentation
 
