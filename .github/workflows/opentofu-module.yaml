@@ -158,12 +158,20 @@ jobs:
             if ! terraform-docs --output-check --config .terraform-docs.yml ${MODULE_HOME};
             then
               echo "##### AFTER FAILED CHECK - SHOWING WHAT WOULD CHANGE #####"
-              echo "Running terraform-docs without --output-check to see changes:"
-              terraform-docs --config .terraform-docs.yml ${MODULE_HOME} --dry-run || echo "dry-run not available"
-              echo "Git status after failed check:"
+              echo "Current README.md content (first 10 lines):"
+              head -10 ${MODULE_HOME}/README.md || echo "Cannot read README.md"
+              echo ""
+              echo "Running terraform-docs to regenerate and show changes:"
+              terraform-docs --config .terraform-docs.yml ${MODULE_HOME} || echo "terraform-docs failed"
+              echo ""
+              echo "Git status after regeneration:"
               git status --porcelain
-              echo "Git diff:"
-              git diff
+              echo ""
+              echo "Git diff (showing changes):"
+              git diff --no-pager
+              echo ""
+              echo "New README.md content (first 10 lines):"
+              head -10 ${MODULE_HOME}/README.md || echo "Cannot read README.md"
               echo "❌ Module README.md is out of date!"
               echo "💡 Run: tofu-docs ${MODULE_HOME} locally to update the README.md"
               exit 1
