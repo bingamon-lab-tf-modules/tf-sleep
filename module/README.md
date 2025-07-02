@@ -14,7 +14,7 @@ This module sleeps for a given duration and can be handy for those pesky race co
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
-| <a name="requirement_time"></a> [time](#requirement\_time) | ~> 0.13.0 |
+| <a name="requirement_time"></a> [time](#requirement\_time) | ~> 0.13.1 |
 
 ## Providers
 
