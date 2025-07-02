@@ -1,10 +1,12 @@
-# MODULE_NAME
+# tf-sleep
 
 ## Table of Contents
 
 ## Overview
 
-A description of the module goes here.
+This module sleeps for a given duration and can be handy for those pesky race conditions with dependencies.
+
+## Documentation
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -12,7 +14,7 @@ A description of the module goes here.
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.9.0 |
-| <a name="requirement_time"></a> [time](#requirement\_time) | ~> 0.13.0 |
+| <a name="requirement_time"></a> [time](#requirement\_time) | ~> 0.13.1 |
 
 ## Providers
 
@@ -34,7 +36,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| <a name="input_sleep_duration"></a> [sleep\_duration](#input\_sleep\_duration) | Duration to sleep (e.g., '30s', '1m', '2h') | `string` | `"30s"` | no |
+| <a name="input_sleep_duration"></a> [sleep\_duration](#input\_sleep\_duration) | Duration to sleep (e.g., '30s', '1m', '2h') | `string` | `"1m"` | no |
 
 ## Outputs
 

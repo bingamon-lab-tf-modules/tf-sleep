@@ -1,6 +1,6 @@
 module "test" {
   source = "../module"
 
-  # TF Variables here...
+  sleep_duration = "10s"
 
 }
