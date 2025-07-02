@@ -113,103 +113,6 @@ jobs:
         run: |
           nix profile install --accept-flake-config nixpkgs#devenv
 
-      - id: git_config
-        name: Configure Git for consistent behavior
-        run: |
-          echo "🔧 Configuring Git..."
-          git config --global core.autocrlf false
-          git config --global core.eol lf
-          git config --global core.safecrlf false
-          echo "Git configuration:"
-          git config --list | grep core | head -10
-
-      - id: normalize_files
-        name: Normalize file line endings
-        run: |
-          echo "🔄 Normalizing file line endings..."
-          echo "Git status before normalization:"
-          git status --porcelain
-          # Reset any potential line ending changes from checkout
-          git add -A
-          git reset --hard HEAD
-          echo "Git status after normalization:"
-          git status --porcelain
-
-      - id: opentofu_format
-        name: OpenTofu Format
-        shell: devenv shell --quiet bash -- -e {0}
-        run: |
-          echo "📝 Checking OpenTofu format..."
-          echo "Git status before format check:"
-          git status --porcelain
-          if ! tofu fmt -check -recursive "${MODULE_HOME}";
-          then
-            echo "❌ OpenTofu files are not properly formatted!"
-            echo "💡 Run: tofu fmt -recursive ${MODULE_HOME}"
-            echo "Git status after failed format check:"
-            git status --porcelain
-            exit 1
-          fi
-          echo "Git status after format check:"
-          git status --porcelain
-          echo "✅ OpenTofu format check passed"
-
-      - id: opentofu_docs_check
-        name: OpenTofu Documentation Check
-        shell: devenv shell --quiet bash -- -e {0}
-        run: |
-          echo "##### ENHANCED DEBUG START #####"
-          echo "Working directory: $(pwd)"
-          echo "Git status:"
-          git status --porcelain
-          echo "Git config (core.autocrlf): $(git config core.autocrlf || echo 'not set')"
-          echo "Git config (core.eol): $(git config core.eol || echo 'not set')"
-          echo "terraform-docs version: $(terraform-docs --version)"
-          echo "Current README.md checksum:"
-          md5sum ${MODULE_HOME}/README.md || echo "README.md not found"
-          echo "File details:"
-          ls -la ${MODULE_HOME}/README.md || echo "README.md not found"
-          echo "##### ENHANCED DEBUG END #####"
-          echo "📚 Checking OpenTofu documentation..."
-          if command -v terraform-docs &> /dev/null;
-          then
-            terraform-docs --version
-            # Check if README needs updating
-            echo "##### BEFORE terraform-docs CHECK #####"
-            git status --porcelain
-            echo "##### RUNNING terraform-docs CHECK #####"
-            if ! terraform-docs --output-check --config .terraform-docs.yml ${MODULE_HOME};
-            then
-              echo "##### AFTER FAILED CHECK - SHOWING WHAT WOULD CHANGE #####"
-              echo "Current README.md content (first 10 lines):"
-              head -10 ${MODULE_HOME}/README.md || echo "Cannot read README.md"
-              echo ""
-              echo "Backing up current README.md:"
-              cp ${MODULE_HOME}/README.md /tmp/current_readme.md
-              echo "Running terraform-docs to regenerate:"
-              terraform-docs --config .terraform-docs.yml ${MODULE_HOME} || echo "terraform-docs failed"
-              echo "Comparing current vs regenerated:"
-              diff -u /tmp/current_readme.md ${MODULE_HOME}/README.md || echo "Files differ - showing differences above"
-              echo ""
-              echo "Git status after regeneration:"
-              git status --porcelain
-              echo ""
-              echo "Git diff (showing changes):"
-              git --no-pager diff
-              echo ""
-              echo "New README.md content (first 10 lines):"
-              head -10 ${MODULE_HOME}/README.md || echo "Cannot read README.md"
-              echo "❌ Module README.md is out of date!"
-              echo "💡 Run: tofu-docs ${MODULE_HOME} locally to update the README.md"
-              exit 1
-            fi
-            echo "✅ Documentation is up to date"
-            exit 0
-          else
-            echo "⚠️ terraform-docs not available, documentation check failed"
-            exit 1
-          fi
-
       - id: opentofu_init
         name: OpenTofu Init
         shell: devenv shell --quiet bash -- -e {0}
@@ -222,6 +125,40 @@ jobs:
             exit 1
           fi
           echo "✅ OpenTofu initialization completed"
+
+      - id: opentofu_format
+        name: OpenTofu Format
+        shell: devenv shell --quiet bash -- -e {0}
+        run: |
+          echo "📝 Checking OpenTofu format..."
+          if ! tofu fmt -check -recursive "${MODULE_HOME}";
+          then
+            echo "❌ OpenTofu files are not properly formatted!"
+            echo "💡 Run: tofu fmt -recursive ${MODULE_HOME}"
+            exit 1
+          fi
+          echo "✅ OpenTofu format check passed"
+
+      - id: opentofu_docs_check
+        name: OpenTofu Documentation Check
+        shell: devenv shell --quiet bash -- -e {0}
+        run: |
+          echo "📚 Checking OpenTofu documentation..."
+          if command -v terraform-docs &> /dev/null;
+          then
+            # Check if README needs updating
+            if ! terraform-docs --output-check --config .terraform-docs.yml ${MODULE_HOME};
+            then
+              echo "❌ Module README.md is out of date!"
+              echo "💡 Run: tofu-docs ${MODULE_HOME} locally to update the README.md"
+              exit 1
+            fi
+            echo "✅ Documentation is up to date"
+            exit 0
+          else
+            echo "⚠️ terraform-docs not available, documentation check failed"
+            exit 1
+          fi
 
       - id: opentofu_validate
         name: OpenTofu Validate
@@ -291,18 +228,24 @@ jobs:
         if: always()
         run: |
           echo "=== OpenTofu Module Build Status ==="
-          echo "Format: ${{ steps.opentofu_format.outcome }}"
           echo "Init: ${{ steps.opentofu_init.outcome }}"
+          echo "Format: ${{ steps.opentofu_format.outcome }}"
           echo "Validate: ${{ steps.opentofu_validate.outcome }}"
           echo "Docs: ${{ steps.opentofu_docs_check.outcome }}"
           echo "Security: ${{ steps.opentofu_security_scan.outcome }}"
           echo "Lint: ${{ steps.opentofu_lint.outcome }}"
           echo "Test: ${{ steps.opentofu_test.outcome }}"
 
-          if [[ "${{ steps.opentofu_format.outcome }}" == "success" && \
-                "${{ steps.opentofu_init.outcome }}" == "success" && \
-                "${{ steps.opentofu_validate.outcome }}" == "success" && \
-                "${{ steps.opentofu_test.outcome }}" == "success" ]]; then
+          if [[ \
+            "${{ steps.opentofu_init.outcome }}" == "success" && \
+            "${{ steps.opentofu_format.outcome }}" == "success" && \
+            "${{ steps.opentofu_docs_check.outcome }}" == "success" && \
+            "${{ steps.opentofu_validate.outcome }}" == "success" && \
+            "${{ steps.opentofu_security_scan.outcome }}" == "success" && \
+            "${{ steps.opentofu_lint.outcome }}" == "success" && \
+            "${{ steps.opentofu_test.outcome }}" == "success" \
+          ]]; \
+          then
             echo "STATUS=success" >> $GITHUB_OUTPUT
             echo "✅ All OpenTofu checks passed!"
           else
