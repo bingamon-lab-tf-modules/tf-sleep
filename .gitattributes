@@ -2,4 +2,4 @@
 *.md text eol=lf
 *.tf text eol=lf
 *.yml text eol=lf
-*.yaml text eol=lf 
+*.yaml text eol=lf
