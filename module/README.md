@@ -20,7 +20,7 @@ This module sleeps for a given duration and can be handy for those pesky race co
 
 | Name | Version |
 | ---- | ------- |
-| <a name="provider_time"></a> [time](#provider\_time) | 0.14.0 |
+| <a name="provider_time"></a> [time](#provider\_time) | 0.14.2 |
 
 ## Modules
 
